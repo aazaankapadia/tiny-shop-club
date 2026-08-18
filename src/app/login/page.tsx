@@ -21,6 +21,10 @@ export default function LoginPage() {
       provider: "google",
       options: {
         redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        scopes: "openid email profile",
+        queryParams: {
+          prompt: "select_account",
+        },
       },
     });
 
@@ -111,7 +115,8 @@ export default function LoginPage() {
         </form>
 
         <p className="mt-3 text-xs text-muted">
-          Works with any email. We’ll create your account the first time.
+          Family Link Google accounts can use email too: type the Gmail and
+          we&apos;ll send a sign-in link. A parent may need to open that email.
         </p>
 
         {message ? (
