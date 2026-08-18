@@ -38,15 +38,11 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Protect account pages. Browsing products stays public.
   const path = request.nextUrl.pathname;
-  const needsAuth =
-    path.startsWith("/dashboard") ||
-    path.startsWith("/products/new") ||
-    path.includes("/buy") ||
-    path.startsWith("/orders");
+  const isPublic =
+    path === "/login" || path.startsWith("/auth/");
 
-  if (!user && needsAuth) {
+  if (!user && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     return NextResponse.redirect(url);

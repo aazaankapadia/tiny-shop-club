@@ -2,7 +2,7 @@
 
 Neighborhood marketplace — phase 1 is Google authentication only.
 
-Production domain: [littlestoreclub.com](https://littlestoreclub.com) (connect later in Vercel).
+Production domain: [tinyshopclub.com](https://tinyshopclub.com) (connect later in Vercel).
 
 ## Stack
 
@@ -48,8 +48,8 @@ In Supabase → **SQL Editor**, run the contents of `supabase/products.sql`.
 Use these when setting up Google + Supabase (local now, production later):
 
 - Local: `http://localhost:3000/auth/callback`
-- Production: `https://littlestoreclub.com/auth/callback`
-- Optional www: `https://www.littlestoreclub.com/auth/callback`
+- Production: `https://tinyshopclub.com/auth/callback`
+- Optional www: `https://www.tinyshopclub.com/auth/callback`
 
 ## Put the site online (Vercel)
 
@@ -84,31 +84,31 @@ Confirm `.env.local` is **not** listed (secrets stay on your computer). Then com
 | `SUPABASE_SERVICE_ROLE_KEY` | same as `.env.local` |
 | `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | same as `.env.local` (test key is OK) |
 | `STRIPE_SECRET_KEY` | same as `.env.local` (test key is OK) |
-| `NEXT_PUBLIC_SITE_URL` | `https://littlestoreclub.com` |
+| `NEXT_PUBLIC_SITE_URL` | `https://tinyshopclub.com` |
 
 4. Click **Deploy**. Wait until it says Ready.
 
-### 3. Connect littlestoreclub.com
+### 3. Connect tinyshopclub.com
 
 1. In Vercel: Project → **Settings → Domains**.
-2. Add `littlestoreclub.com` and `www.littlestoreclub.com`.
+2. Add `tinyshopclub.com` and `www.tinyshopclub.com`.
 3. Vercel will show DNS records (usually an **A** record and a **CNAME**).
 4. Open the site where you bought the domain (GoDaddy, Namecheap, Google Domains, etc.) and paste those records.
-5. Wait a few minutes, then visit `https://littlestoreclub.com`.
+5. Wait a few minutes, then visit `https://tinyshopclub.com`.
 
 ### 4. Allow production login (Supabase + Google)
 
 **Supabase → Authentication → URL Configuration**
 
-- Site URL: `https://littlestoreclub.com`
+- Site URL: `https://tinyshopclub.com`
 - Redirect URLs (keep localhost too):
   - `http://localhost:3000/auth/callback`
-  - `https://littlestoreclub.com/auth/callback`
-  - `https://www.littlestoreclub.com/auth/callback`
+  - `https://tinyshopclub.com/auth/callback`
+  - `https://www.tinyshopclub.com/auth/callback`
 
 **Google Cloud → your OAuth client**
 
-- Authorized JavaScript origins: add `https://littlestoreclub.com`
+- Authorized JavaScript origins: add `https://tinyshopclub.com`
 - Authorized redirect URIs: keep the existing Supabase callback  
   (`https://YOUR-PROJECT.supabase.co/auth/v1/callback`)
 
