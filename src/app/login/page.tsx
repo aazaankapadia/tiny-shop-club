@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { SiteFooter } from "@/components/site-footer";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -34,7 +35,7 @@ export default function LoginPage() {
     }
   }
 
-  async function handleEmailLogin(event: React.FormEvent<HTMLFormElement>) {
+  async function handleEmailLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoadingEmail(true);
     setError(null);
@@ -62,13 +63,14 @@ export default function LoginPage() {
   const busy = loadingGoogle || loadingEmail;
 
   return (
-    <main className="flex flex-1 flex-col items-center justify-center px-6 py-16">
-      <div className="w-full max-w-sm text-center">
+    <div className="flex min-h-full flex-1 flex-col">
+      <main className="flex flex-1 flex-col items-center justify-center px-6 py-16">
+        <div className="w-full max-w-sm text-center">
         <Link
           href="/"
           className="font-display text-3xl tracking-tight text-foreground"
         >
-          Little Store Club
+          Tiny Shop Club
         </Link>
         <p className="mt-2 text-muted">Sign in with your email to continue</p>
 
@@ -130,8 +132,17 @@ export default function LoginPage() {
             {error}
           </p>
         ) : null}
-      </div>
-    </main>
+
+        <p className="mt-8 text-sm text-muted">
+          A parent-supervised neighborhood marketplace for kids.{" "}
+          <Link href="/safety" className="text-accent hover:underline">
+            Safety info
+          </Link>
+        </p>
+        </div>
+      </main>
+      <SiteFooter />
+    </div>
   );
 }
 

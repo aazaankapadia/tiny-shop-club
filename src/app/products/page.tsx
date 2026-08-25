@@ -18,7 +18,7 @@ export default async function ProductsPage() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <Link href="/" className="text-sm text-muted hover:text-foreground">
-            Little Store Club
+            Tiny Shop Club
           </Link>
           <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-foreground">
             Neighborhood items

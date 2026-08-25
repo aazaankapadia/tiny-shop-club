@@ -119,7 +119,7 @@ export async function placeOrder(
             unit_amount: product.price_cents,
             product_data: {
               name: product.title,
-              description: "Little Store Club · door delivery",
+              description: "Tiny Shop Club · door delivery",
             },
           },
         },

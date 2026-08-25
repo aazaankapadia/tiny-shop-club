@@ -12,9 +12,43 @@ const sans = Manrope({
   subsets: ["latin"],
 });
 
+const title = "Tiny Shop Club | Safe Educational Marketplace for Kids";
+const description =
+  "Tiny Shop Club is a safe, parent-supervised educational platform where children learn entrepreneurship, creativity, and responsible buying and selling.";
+
 export const metadata: Metadata = {
-  title: "Little Store Club",
-  description: "The Little Store Next Door",
+  metadataBase: new URL("https://www.tinyshopclub.com"),
+  title: {
+    default: title,
+    template: "%s | Tiny Shop Club",
+  },
+  description,
+  applicationName: "Tiny Shop Club",
+  keywords: [
+    "Tiny Shop Club",
+    "kids marketplace",
+    "educational entrepreneurship",
+    "parent supervised",
+    "Family Link",
+    "neighborhood shop",
+  ],
+  openGraph: {
+    title,
+    description,
+    url: "https://www.tinyshopclub.com",
+    siteName: "Tiny Shop Club",
+    type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary",
+    title,
+    description,
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
