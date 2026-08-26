@@ -3,7 +3,13 @@ import { createClient } from "@/lib/supabase/server";
 import { ProductPhoto } from "@/components/product-photo";
 import { formatPrice, formatQuantity, PRODUCT_COLUMNS, type Product } from "@/lib/products";
 
-export default async function ProductsPage() {
+type ProductsPageProps = {
+  searchParams: Promise<{ q?: string }>;
+};
+
+export default async function ProductsPage({ searchParams }: ProductsPageProps) {
+  const { q } = await searchParams;
+  const query = q?.trim().toLowerCase() ?? "";
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("products")
@@ -11,7 +17,13 @@ export default async function ProductsPage() {
     .gt("quantity", 0)
     .order("created_at", { ascending: false });
 
-  const products = (data ?? []) as Product[];
+  const products = ((data ?? []) as Product[]).filter((product) => {
+    if (!query) return true;
+    return (
+      product.title.toLowerCase().includes(query) ||
+      product.description.toLowerCase().includes(query)
+    );
+  });
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-6 py-12">
@@ -23,7 +35,11 @@ export default async function ProductsPage() {
           <h1 className="mt-2 font-display text-3xl font-semibold tracking-tight text-foreground">
             Neighborhood items
           </h1>
-          <p className="mt-2 text-muted">Browse what neighbors are listing.</p>
+          <p className="mt-2 text-muted">
+            {query
+              ? `Showing items matching “${q?.trim()}”.`
+              : "Browse what neighbors are listing."}
+          </p>
         </div>
         <Link
           href="/products/new"
@@ -41,7 +57,19 @@ export default async function ProductsPage() {
       ) : null}
 
       {!error && products.length === 0 ? (
-        <p className="mt-10 text-muted">No items yet. Be the first to list one.</p>
+        <p className="mt-10 text-muted">
+          {query ? (
+            <>
+              No items match that search.{" "}
+              <Link href="/products" className="text-accent hover:underline">
+                See all items
+              </Link>
+              .
+            </>
+          ) : (
+            "No items yet. Be the first to list one."
+          )}
+        </p>
       ) : null}
 
       <ul className="mt-10 space-y-6">

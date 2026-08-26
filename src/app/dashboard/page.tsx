@@ -176,6 +176,14 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     (salesProducts ?? []).map((product) => [product.id, product]),
   );
 
+  const listingCount = myProducts.length;
+  const salesCount = sales.length;
+  const orderCount = purchases.length;
+  const hasListings = listingCount > 0;
+  const hasSales = salesCount > 0 || archivedSales.length > 0 || showArchived;
+  const hasOrders = orderCount > 0;
+  const isNewMember = !hasListings && !hasSales && !hasOrders;
+
   return (
     <main className="relative flex flex-1 flex-col overflow-hidden">
       <div className="pointer-events-none absolute inset-0 -z-10">
@@ -192,31 +200,52 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
       </div>
 
       <div className="mx-auto w-full max-w-3xl px-6 pb-16 pt-8">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <Link
             href="/"
             className="font-display text-lg font-semibold tracking-tight text-foreground transition hover:opacity-80"
           >
             Tiny Shop Club
           </Link>
-          <nav className="flex items-center gap-4 text-sm text-muted">
-            <Link href="/products" className="transition hover:text-foreground">
-              Browse
+          <nav className="flex items-center gap-3">
+            <Link
+              href="/products"
+              className="text-sm text-muted transition hover:text-foreground"
+            >
+              Explore
             </Link>
             <Link
               href="/products/new"
-              className="transition hover:text-foreground"
+              className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white transition hover:opacity-90"
             >
-              List item
+              Sell something
             </Link>
+            <span
+              className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full ring-2 ring-white"
+              title={name}
+            >
+              {avatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={avatarUrl}
+                  alt=""
+                  className="h-full w-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <span className="flex h-full w-full items-center justify-center bg-accent text-xs font-semibold text-white">
+                  {initials.slice(0, 1) || "T"}
+                </span>
+              )}
+            </span>
           </nav>
         </div>
 
         <section className="relative mt-8 overflow-hidden rounded-3xl">
           <div className="relative h-44 w-full sm:h-52">
             <Image
-              src="/dashboard-banner.png"
-              alt="Neighborhood market table with fresh produce and baked goods"
+              src="/dashboard-marketplace.png"
+              alt="Neighborhood table with cookies, crafts, plants, toys, flowers, and lemonade"
               fill
               priority
               className="object-cover"
@@ -239,7 +268,7 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-accent text-xl font-semibold text-white">
-                  {initials || "LS"}
+                  {initials || "T"}
                 </div>
               )}
             </div>
@@ -251,13 +280,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
               </h1>
               <p className="mt-2 truncate text-muted">{email}</p>
               <p className="mt-2 text-sm text-accent">
-                Glad you&apos;re here — list something neighbors might love.
+                Glad you&apos;re here — see what the neighborhood is sharing, or
+                start your own tiny shop.
               </p>
             </div>
-
-            <span className="w-fit rounded-full bg-accent/10 px-3 py-1 text-xs font-medium text-accent">
-              {myProducts.length} listing{myProducts.length === 1 ? "" : "s"}
-            </span>
           </div>
         </section>
 
@@ -266,9 +292,9 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             href="/products/new"
             className="group rounded-2xl bg-accent px-5 py-5 text-white transition hover:opacity-95"
           >
-            <p className="font-display text-lg font-semibold">List an item</p>
+            <p className="font-display text-lg font-semibold">Start selling</p>
             <p className="mt-1 text-sm text-white/80">
-              Put something on the neighborhood table
+              Put something in your tiny shop.
             </p>
             <span className="mt-4 inline-block text-sm transition group-hover:translate-x-1">
               Get started →
@@ -279,10 +305,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
             className="group rounded-2xl bg-surface px-5 py-5 ring-1 ring-foreground/10 transition hover:bg-white"
           >
             <p className="font-display text-lg font-semibold text-foreground">
-              Browse items
+              Explore the club
             </p>
             <p className="mt-1 text-sm text-muted">
-              See what&apos;s new next door
+              See what your neighbors are selling.
             </p>
             <span className="mt-4 inline-block text-sm text-accent transition group-hover:translate-x-1">
               Take a look →
@@ -296,168 +322,172 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           </p>
         ) : null}
 
-        <section className="mt-12">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-                Your sales
-              </h2>
-              <p className="mt-1 text-sm text-muted">
-                When a neighbor pays, it shows up here with the delivery address
-              </p>
-            </div>
-            <Link
-              href={showArchived ? "/dashboard" : "/dashboard?show_archived=1"}
-              className="shrink-0 text-sm text-accent transition hover:underline"
-            >
-              {showArchived ? "Hide archived" : "Show archived"}
-            </Link>
-          </div>
-          {sales.length === 0 ? (
-            <p className="mt-4 text-muted">
-              {showArchived ? "No active sales." : "No sales yet."}
+        {isNewMember ? (
+          <section className="mt-12">
+            <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">
+              Your activity
+            </h2>
+            <p className="mt-2 text-muted">
+              {listingCount} listing{listingCount === 1 ? "" : "s"} ·{" "}
+              {salesCount} sale{salesCount === 1 ? "" : "s"} · {orderCount}{" "}
+              order{orderCount === 1 ? "" : "s"}
             </p>
-          ) : (
-            <ul className="mt-4 space-y-3">
-              {sales.map((order) => (
-                <SaleListItem
-                  key={order.id}
-                  order={order}
-                  product={salesTitleById.get(order.product_id)}
-                  archived={false}
-                />
-              ))}
-            </ul>
-          )}
-          {showArchived ? (
-            <div className="mt-8">
-              <h3 className="font-display text-lg font-semibold tracking-tight text-foreground">
-                Archived sales
-              </h3>
-              <p className="mt-1 text-sm text-muted">
-                Hidden from your main list — unarchive to bring one back
-              </p>
-              {archivedSales.length === 0 ? (
-                <p className="mt-4 text-muted">No archived sales.</p>
-              ) : (
-                <ul className="mt-4 space-y-3">
-                  {archivedSales.map((order) => (
-                    <SaleListItem
-                      key={order.id}
-                      order={order}
-                      product={salesTitleById.get(order.product_id)}
-                      archived
-                    />
-                  ))}
-                </ul>
-              )}
-            </div>
-          ) : null}
-        </section>
-
-        <section className="mt-12">
-          <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-            Your orders
-          </h2>
-          <p className="mt-1 text-sm text-muted">Items coming to your door</p>
-          {purchases.length === 0 ? (
-            <p className="mt-4 text-muted">No orders yet.</p>
-          ) : (
-            <ul className="mt-4 space-y-3">
-              {purchases.map((order) => {
-                const product = purchaseTitleById.get(order.product_id);
-                return (
-                  <li key={order.id}>
-                    <Link
-                      href={`/orders/${order.id}`}
-                      className="block rounded-2xl bg-surface p-4 ring-1 ring-foreground/8 transition hover:bg-white"
-                    >
-                      <p className="font-medium text-foreground">
-                        {product?.title ?? "Item"}
-                        {order.quantity > 1 ? ` × ${order.quantity}` : ""}
-                      </p>
-                      <p className="mt-1 text-sm text-muted">
-                        {orderStatusLabel(order.status)}
-                      </p>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </section>
-
-        <section className="mt-12">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-                Your listings
-              </h2>
-              <p className="mt-1 text-sm text-muted">
-                Things you&apos;ve shared with the club
-              </p>
-            </div>
-          </div>
-
-          {myProducts.length === 0 ? (
-            <div className="mt-6 overflow-hidden rounded-2xl bg-surface ring-1 ring-foreground/10">
-              <div className="relative h-36 w-full">
-                <Image
-                  src="/dashboard-banner.png"
-                  alt=""
-                  fill
-                  className="object-cover opacity-80"
-                  sizes="(max-width: 768px) 100vw, 768px"
-                />
-                <div className="absolute inset-0 bg-[#173028]/45" />
-                <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
-                  <p className="max-w-sm text-sm text-white">
-                    No listings yet — your first item could be cookies, crafts,
-                    or something from the garden.
-                  </p>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <ul className="mt-6 space-y-3">
-              {myProducts.map((product) => (
-                <li
-                  key={product.id}
-                  className="flex items-center gap-4 rounded-2xl bg-surface p-4 ring-1 ring-foreground/8 transition hover:bg-white"
-                >
-                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl">
-                    <ProductPhoto
-                      src={product.image_url}
-                      alt={product.title}
-                      sizes="48px"
-                    />
+          </section>
+        ) : (
+          <>
+            {hasSales ? (
+              <section className="mt-12">
+                <div className="flex items-end justify-between gap-4">
+                  <div>
+                    <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">
+                      Your sales
+                    </h2>
+                    <p className="mt-1 text-sm text-muted">
+                      When a neighbor pays, it shows up here with the delivery
+                      address
+                    </p>
                   </div>
                   <Link
-                    href={`/products/${product.id}`}
-                    className="min-w-0 flex-1 transition hover:opacity-80"
+                    href={
+                      showArchived ? "/dashboard" : "/dashboard?show_archived=1"
+                    }
+                    className="shrink-0 text-sm text-accent transition hover:underline"
                   >
-                    <p className="truncate font-medium text-foreground">
-                      {product.title}
-                    </p>
-                    <p className="text-sm text-muted">
-                      {formatPrice(product.price_cents)} ·{" "}
-                      {formatQuantity(product.quantity)}
-                    </p>
+                    {showArchived ? "Hide archived" : "Show archived"}
                   </Link>
-                  <form action={deleteProduct}>
-                    <input type="hidden" name="productId" value={product.id} />
-                    <button
-                      type="submit"
-                      className="text-sm text-red-800/80 hover:text-red-800 hover:underline"
+                </div>
+                {sales.length === 0 ? (
+                  <p className="mt-4 text-muted">
+                    {showArchived ? "No active sales." : "No sales yet."}
+                  </p>
+                ) : (
+                  <ul className="mt-4 space-y-3">
+                    {sales.map((order) => (
+                      <SaleListItem
+                        key={order.id}
+                        order={order}
+                        product={salesTitleById.get(order.product_id)}
+                        archived={false}
+                      />
+                    ))}
+                  </ul>
+                )}
+                {showArchived ? (
+                  <div className="mt-8">
+                    <h3 className="font-display text-lg font-semibold tracking-tight text-foreground">
+                      Archived sales
+                    </h3>
+                    <p className="mt-1 text-sm text-muted">
+                      Hidden from your main list — unarchive to bring one back
+                    </p>
+                    {archivedSales.length === 0 ? (
+                      <p className="mt-4 text-muted">No archived sales.</p>
+                    ) : (
+                      <ul className="mt-4 space-y-3">
+                        {archivedSales.map((order) => (
+                          <SaleListItem
+                            key={order.id}
+                            order={order}
+                            product={salesTitleById.get(order.product_id)}
+                            archived
+                          />
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                ) : null}
+              </section>
+            ) : null}
+
+            {hasOrders ? (
+              <section className="mt-12">
+                <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">
+                  Your orders
+                </h2>
+                <p className="mt-1 text-sm text-muted">
+                  Items coming to your door
+                </p>
+                <ul className="mt-4 space-y-3">
+                  {purchases.map((order) => {
+                    const product = purchaseTitleById.get(order.product_id);
+                    return (
+                      <li key={order.id}>
+                        <Link
+                          href={`/orders/${order.id}`}
+                          className="block rounded-2xl bg-surface p-4 ring-1 ring-foreground/8 transition hover:bg-white"
+                        >
+                          <p className="font-medium text-foreground">
+                            {product?.title ?? "Item"}
+                            {order.quantity > 1 ? ` × ${order.quantity}` : ""}
+                          </p>
+                          <p className="mt-1 text-sm text-muted">
+                            {orderStatusLabel(order.status)}
+                          </p>
+                        </Link>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+            ) : null}
+
+            {hasListings ? (
+              <section className="mt-12">
+                <div className="flex items-end justify-between gap-4">
+                  <div>
+                    <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">
+                      Your listings
+                    </h2>
+                    <p className="mt-1 text-sm text-muted">
+                      Things you&apos;ve shared with the club
+                    </p>
+                  </div>
+                </div>
+                <ul className="mt-6 space-y-3">
+                  {myProducts.map((product) => (
+                    <li
+                      key={product.id}
+                      className="flex items-center gap-4 rounded-2xl bg-surface p-4 ring-1 ring-foreground/8 transition hover:bg-white"
                     >
-                      Delete
-                    </button>
-                  </form>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+                      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl">
+                        <ProductPhoto
+                          src={product.image_url}
+                          alt={product.title}
+                          sizes="48px"
+                        />
+                      </div>
+                      <Link
+                        href={`/products/${product.id}`}
+                        className="min-w-0 flex-1 transition hover:opacity-80"
+                      >
+                        <p className="truncate font-medium text-foreground">
+                          {product.title}
+                        </p>
+                        <p className="text-sm text-muted">
+                          {formatPrice(product.price_cents)} ·{" "}
+                          {formatQuantity(product.quantity)}
+                        </p>
+                      </Link>
+                      <form action={deleteProduct}>
+                        <input
+                          type="hidden"
+                          name="productId"
+                          value={product.id}
+                        />
+                        <button
+                          type="submit"
+                          className="text-sm text-red-800/80 hover:text-red-800 hover:underline"
+                        >
+                          Delete
+                        </button>
+                      </form>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+          </>
+        )}
 
         <form action={signOut} className="mt-12">
           <button

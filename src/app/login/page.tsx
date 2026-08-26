@@ -2,38 +2,25 @@
 
 import { useState, type FormEvent } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { SiteFooter } from "@/components/site-footer";
+import { safeNextPath } from "@/lib/paths";
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const next = safeNextPath(searchParams.get("next"));
   const [email, setEmail] = useState("");
-  const [loadingGoogle, setLoadingGoogle] = useState(false);
   const [loadingEmail, setLoadingEmail] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  async function handleGoogleLogin() {
-    setLoadingGoogle(true);
-    setError(null);
-    setMessage(null);
-
-    const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
-        scopes: "openid email profile",
-        queryParams: {
-          prompt: "select_account",
-        },
-      },
-    });
-
-    if (signInError) {
-      setError(signInError.message);
-      setLoadingGoogle(false);
-    }
-  }
+  const authError =
+    searchParams.get("error") === "google"
+      ? "Google sign-in could not start. Try again or use email."
+      : searchParams.get("error") === "auth"
+        ? "Sign-in did not finish. Try again."
+        : null;
+  const visibleError = error ?? authError;
 
   async function handleEmailLogin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -45,7 +32,7 @@ export default function LoginPage() {
     const { error: otpError } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
         shouldCreateUser: true,
       },
     });
@@ -60,7 +47,7 @@ export default function LoginPage() {
     setLoadingEmail(false);
   }
 
-  const busy = loadingGoogle || loadingEmail;
+  const busy = loadingEmail;
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
@@ -74,15 +61,13 @@ export default function LoginPage() {
         </Link>
         <p className="mt-2 text-muted">Sign in with your email to continue</p>
 
-        <button
-          type="button"
-          onClick={handleGoogleLogin}
-          disabled={busy}
-          className="mt-8 flex w-full items-center justify-center gap-3 rounded-md border border-foreground/15 bg-surface px-4 py-3 text-sm font-medium text-foreground transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-60"
+        <a
+          href={`/auth/google?next=${encodeURIComponent(next)}`}
+          className="mt-8 flex w-full items-center justify-center gap-3 rounded-md border border-foreground/15 bg-surface px-4 py-3 text-sm font-medium text-foreground transition hover:bg-white"
         >
           <GoogleIcon />
-          {loadingGoogle ? "Redirecting…" : "Continue with Google"}
-        </button>
+          Continue with Google
+        </a>
 
         <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-wide text-muted">
           <div className="h-px flex-1 bg-foreground/10" />
@@ -127,9 +112,9 @@ export default function LoginPage() {
           </p>
         ) : null}
 
-        {error ? (
+        {visibleError ? (
           <p className="mt-4 text-sm text-red-700" role="alert">
-            {error}
+            {visibleError}
           </p>
         ) : null}
 

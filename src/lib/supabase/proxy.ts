@@ -1,7 +1,15 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { isPublicPath } from "@/lib/paths";
 
 export async function updateSession(request: NextRequest) {
+  const code = request.nextUrl.searchParams.get("code");
+  if (code && request.nextUrl.pathname !== "/auth/callback") {
+    const url = request.nextUrl.clone();
+    url.pathname = "/auth/callback";
+    return NextResponse.redirect(url);
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });
@@ -39,21 +47,12 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const publicExact = new Set([
-    "/",
-    "/login",
-    "/privacy",
-    "/terms",
-    "/safety",
-    "/contact",
-    "/robots.txt",
-    "/sitemap.xml",
-  ]);
-  const isPublic = publicExact.has(path) || path.startsWith("/auth/");
 
-  if (!user && !isPublic) {
+  if (!user && !isPublicPath(path)) {
     const url = request.nextUrl.clone();
+    const next = `${path}${request.nextUrl.search}`;
     url.pathname = "/login";
+    url.search = `?next=${encodeURIComponent(next)}`;
     return NextResponse.redirect(url);
   }
 
