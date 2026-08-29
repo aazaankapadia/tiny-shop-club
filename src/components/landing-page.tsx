@@ -73,7 +73,7 @@ export function LandingPage({
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/landing-hero.jpg"
-                alt="A kid handing a handmade thank-you bag to a neighbor"
+                alt="Homemade chocolate chip cookies on a table"
                 className="h-full w-full object-cover object-[center_48%]"
               />
             </div>
