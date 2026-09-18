@@ -194,13 +194,13 @@ export function LandingPage({
               Every purchase supports young entrepreneurs in our community.
             </p>
           </div>
-          <a
-            href="https://games6741.netlify.app"
+          <Link
+            href="/notes"
             className="hidden h-12 w-12 md:block"
             aria-label="Class notes"
           >
             <ShopMark className="h-12 w-12" />
-          </a>
+          </Link>
         </div>
       </section>
     </div>

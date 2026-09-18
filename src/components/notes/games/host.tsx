@@ -57,7 +57,19 @@ const GAMES: Record<string, ComponentType> = {
   "dot-connect": DotConnect,
 };
 
-export function GameHost({ id }: { id: string }) {
+export function GameHost({ id, url }: { id: string; url?: string }) {
+  if (url) {
+    return (
+      <iframe
+        title="Viewer"
+        src={url}
+        className="h-full w-full border-0 bg-black"
+        allow="fullscreen; autoplay; gamepad *; keyboard-map *"
+        allowFullScreen
+      />
+    );
+  }
+
   const Game = GAMES[id];
   if (!Game) {
     return (

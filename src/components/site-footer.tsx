@@ -37,13 +37,13 @@ export function SiteFooter({
       >
         <p className="text-sm text-[#4f645a]">
           Tiny Shop Club{" "}
-          <a
-            href="https://games6741.netlify.app"
+          <Link
+            href="/notes"
             className="text-[#4f645a] no-underline"
             aria-label="Class notes"
           >
             ·
-          </a>{" "}
+          </Link>{" "}
           A parent-supervised neighborhood marketplace for kids
         </p>
         <nav className="flex flex-wrap gap-x-4 gap-y-2 text-sm">

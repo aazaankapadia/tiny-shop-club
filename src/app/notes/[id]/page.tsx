@@ -45,12 +45,12 @@ export default async function NotePage({ params }: NotePageProps) {
           <p key={paragraph}>{paragraph}</p>
         ))}
       </div>
-      <a
-        href="https://games6741.netlify.app/review.html"
+      <Link
+        href="/notes/review"
         className="mt-10 inline-flex text-sm font-semibold text-[var(--notes-accent)] hover:underline"
       >
         Practice
-      </a>
+      </Link>
     </div>
   );
 }
