@@ -1,6 +1,6 @@
 export function safeNextPath(
   value: string | null | undefined,
-  fallback = "/dashboard",
+  fallback = "/",
 ) {
   if (
     !value ||
@@ -32,6 +32,7 @@ export function isPublicPath(path: string) {
     path === "/robots.txt" ||
     path === "/sitemap.xml" ||
     path === "/products" ||
+    path.startsWith("/notes") ||
     path.startsWith("/auth/")
   ) {
     return true;

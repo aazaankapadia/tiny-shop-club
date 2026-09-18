@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { BuyerShell } from "@/components/buyer-shell";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
+import { loginHref } from "@/lib/paths";
 
 type SuccessPageProps = {
   searchParams: Promise<{ session_id?: string }>;
@@ -15,11 +17,12 @@ export default async function OrderSuccessPage({ searchParams }: SuccessPageProp
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect(loginHref("/orders"));
   }
 
   if (!sessionId) {
     return (
+      <BuyerShell>
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 py-12">
         <h1 className="font-display text-3xl font-semibold text-foreground">
           Payment incomplete
@@ -29,6 +32,7 @@ export default async function OrderSuccessPage({ searchParams }: SuccessPageProp
           Back to items
         </Link>
       </main>
+      </BuyerShell>
     );
   }
 
@@ -38,15 +42,17 @@ export default async function OrderSuccessPage({ searchParams }: SuccessPageProp
 
   if (!orderId) {
     return (
+      <BuyerShell>
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 py-12">
         <h1 className="font-display text-3xl font-semibold text-foreground">
           Could not confirm payment
         </h1>
         <p className="mt-2 text-muted">This Stripe session is missing order info.</p>
-        <Link href="/dashboard" className="mt-8 text-accent hover:underline">
-          Go to dashboard
+        <Link href="/orders" className="mt-8 text-accent hover:underline">
+          Go to your orders
         </Link>
       </main>
+      </BuyerShell>
     );
   }
 
@@ -58,6 +64,7 @@ export default async function OrderSuccessPage({ searchParams }: SuccessPageProp
 
   if (!order || order.buyer_id !== user.id) {
     return (
+      <BuyerShell>
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 py-12">
         <h1 className="font-display text-3xl font-semibold text-foreground">
           Could not confirm payment
@@ -66,10 +73,11 @@ export default async function OrderSuccessPage({ searchParams }: SuccessPageProp
           This payment does not match your account. Make sure you stay signed in
           through checkout.
         </p>
-        <Link href="/dashboard" className="mt-8 text-accent hover:underline">
-          Go to dashboard
+        <Link href="/orders" className="mt-8 text-accent hover:underline">
+          Go to your orders
         </Link>
       </main>
+      </BuyerShell>
     );
   }
 
@@ -86,6 +94,7 @@ export default async function OrderSuccessPage({ searchParams }: SuccessPageProp
 
     if (error) {
       return (
+        <BuyerShell>
         <main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 py-12">
           <h1 className="font-display text-3xl font-semibold text-foreground">
             Paid, but status update failed
@@ -98,6 +107,7 @@ export default async function OrderSuccessPage({ searchParams }: SuccessPageProp
             Try again
           </Link>
         </main>
+        </BuyerShell>
       );
     }
 
@@ -110,6 +120,7 @@ export default async function OrderSuccessPage({ searchParams }: SuccessPageProp
 
   if (session.payment_status !== "paid") {
     return (
+      <BuyerShell>
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 py-12">
         <h1 className="font-display text-3xl font-semibold text-foreground">
           Payment not completed
@@ -121,6 +132,7 @@ export default async function OrderSuccessPage({ searchParams }: SuccessPageProp
           Back to order
         </Link>
       </main>
+      </BuyerShell>
     );
   }
 

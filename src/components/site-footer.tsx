@@ -4,20 +4,25 @@ export function SiteFooter({
   wide = false,
   compact = false,
   signedIn = false,
+  mode = "buy",
 }: {
   wide?: boolean;
   compact?: boolean;
   signedIn?: boolean;
+  mode?: "buy" | "sell";
 }) {
+  const accountLink = signedIn
+    ? mode === "sell"
+      ? { href: "/dashboard", label: "My shop" }
+      : { href: "/orders", label: "My orders" }
+    : { href: "/login", label: "Sign in" };
   const links = [
-    { href: "/", label: "About" },
+    { href: "/", label: "Shop" },
     { href: "/safety", label: "Safety" },
     { href: "/privacy", label: "Privacy" },
     { href: "/terms", label: "Terms" },
     { href: "/contact", label: "Contact" },
-    signedIn
-      ? { href: "/dashboard", label: "Dashboard" }
-      : { href: "/login", label: "Sign in" },
+    accountLink,
   ];
   return (
     <footer
@@ -31,7 +36,15 @@ export function SiteFooter({
         }`}
       >
         <p className="text-sm text-[#4f645a]">
-          Tiny Shop Club · A parent-supervised neighborhood marketplace for kids
+          Tiny Shop Club{" "}
+          <Link
+            href="/notes"
+            className="text-[#4f645a] no-underline"
+            aria-label="Class notes"
+          >
+            ·
+          </Link>{" "}
+          A parent-supervised neighborhood marketplace for kids
         </p>
         <nav className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
           {links.map((link) => (

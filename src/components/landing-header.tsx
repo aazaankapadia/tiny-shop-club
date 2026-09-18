@@ -1,29 +1,29 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 import { ShopMark } from "@/components/shop-mark";
+import { ModeSwitch } from "@/components/mode-switch";
 import { loginHref } from "@/lib/paths";
 
 export function LandingHeader({
   signedIn,
   firstName = null,
   avatarUrl = null,
-  cartCount = 0,
 }: {
   signedIn: boolean;
   firstName?: string | null;
   avatarUrl?: string | null;
   cartCount?: number;
 }) {
-  const ordersHref = signedIn ? "/dashboard" : loginHref("/dashboard");
-  const accountHref = signedIn ? "/dashboard" : "/login";
-  const favoritesHref = signedIn ? "/dashboard" : loginHref("/dashboard");
+  const ordersHref = signedIn ? "/orders" : loginHref("/orders");
+  const accountHref = signedIn ? "/orders" : "/login";
+  const sellHref = signedIn ? "/dashboard" : loginHref("/dashboard");
 
   return (
     <header className="border-b border-[rgba(25,60,45,0.08)] bg-[#FFFCF5]">
       <div className="mx-auto flex max-w-[1200px] flex-wrap items-center gap-x-4 gap-y-2 px-6 py-3 lg:h-[72px] lg:flex-nowrap lg:py-0">
-        <Link href="/" className="flex shrink-0 items-center gap-2">
-          <ShopMark className="h-8 w-8" />
-          <span className="font-display text-[17px] font-semibold tracking-tight text-[#397A45]">
+        <Link href="/" className="flex shrink-0 items-center gap-2.5">
+          <ShopMark className="h-11 w-11" />
+          <span className="font-display text-[22px] font-semibold tracking-tight text-[#397A45]">
             Tiny Shop Club
           </span>
         </Link>
@@ -50,22 +50,10 @@ export function LandingHeader({
           </div>
         </form>
 
-        <nav className="ml-auto flex shrink-0 items-center gap-4 text-[11px] font-medium text-[#173C2E] sm:gap-5">
-          <HeaderLink href={favoritesHref} label="Favorites">
-            <HeartIcon />
-          </HeaderLink>
+        <nav className="ml-auto flex shrink-0 items-center gap-3 text-[11px] font-medium text-[#173C2E] sm:gap-4">
+          <ModeSwitch mode="buy" sellHref={sellHref} />
           <HeaderLink href={ordersHref} label="Orders">
             <OrdersIcon />
-          </HeaderLink>
-          <HeaderLink href="/products" label="Cart">
-            <span className="relative">
-              <CartIcon />
-              {cartCount > 0 ? (
-                <span className="absolute -right-2 -top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#397A45] px-1 text-[10px] font-semibold text-white">
-                  {cartCount}
-                </span>
-              ) : null}
-            </span>
           </HeaderLink>
           {signedIn ? (
             <Link
@@ -89,7 +77,14 @@ export function LandingHeader({
                 </span>
               )}
             </Link>
-          ) : null}
+          ) : (
+            <Link
+              href="/login"
+              className="rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-[#173C2E] ring-1 ring-[rgba(25,60,45,0.10)]"
+            >
+              Sign in
+            </Link>
+          )}
         </nav>
       </div>
     </header>
@@ -125,40 +120,11 @@ function SearchIcon() {
   );
 }
 
-function HeartIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M12 20s-7-4.4-7-9.2C5 8 6.8 6.4 9 6.4c1.3 0 2.4.6 3 1.6.6-1 1.7-1.6 3-1.6 2.2 0 4 1.6 4 4.4 0 4.8-7 9.2-7 9.2Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
 function OrdersIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
       <rect x="6" y="4" width="12" height="16" rx="2" stroke="currentColor" strokeWidth="1.7" />
       <path d="M9 9h6M9 13h6" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function CartIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-      <path
-        d="M5 7h15l-1.4 8.2a2 2 0 0 1-2 1.6H9a2 2 0 0 1-2-1.5L5 7Z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinejoin="round"
-      />
-      <path d="M8 7 7 4H4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" />
-      <circle cx="9.5" cy="19.5" r="1.3" fill="currentColor" />
-      <circle cx="16.5" cy="19.5" r="1.3" fill="currentColor" />
     </svg>
   );
 }

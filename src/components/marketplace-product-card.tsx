@@ -15,7 +15,7 @@ export function MarketplaceProductCard({
   const buyHref = signedIn
     ? `/products/${product.id}/buy`
     : loginHref(`/products/${product.id}/buy`);
-  const favoriteHref = signedIn ? "/dashboard" : loginHref("/dashboard");
+  const favoriteHref = signedIn ? "/orders" : loginHref("/orders");
 
   return (
     <li className="flex h-full flex-col overflow-hidden rounded-[22px] bg-white shadow-[0_6px_18px_rgba(23,60,46,0.06)] ring-1 ring-[rgba(25,60,45,0.10)]">

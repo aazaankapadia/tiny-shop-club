@@ -9,7 +9,7 @@ export async function resumePayment(formData: FormData) {
   const orderId = String(formData.get("orderId") ?? "").trim();
 
   if (!orderId) {
-    redirect("/dashboard");
+    redirect("/orders");
   }
 
   const supabase = await createClient();
@@ -28,7 +28,7 @@ export async function resumePayment(formData: FormData) {
     .maybeSingle();
 
   if (!order || order.buyer_id !== user.id) {
-    redirect("/dashboard");
+    redirect("/orders");
   }
 
   if (order.status !== "pending_payment") {
@@ -44,7 +44,7 @@ export async function resumePayment(formData: FormData) {
     .maybeSingle();
 
   if (!product) {
-    redirect("/dashboard");
+    redirect("/orders");
   }
 
   if (product.quantity < buyQty) {
@@ -109,7 +109,7 @@ export async function cancelOrder(formData: FormData) {
   }
 
   if (!orderId) {
-    redirect("/dashboard");
+    redirect("/orders");
   }
 
   const { data: order } = await supabase
@@ -119,7 +119,7 @@ export async function cancelOrder(formData: FormData) {
     .maybeSingle();
 
   if (!order || order.buyer_id !== user.id) {
-    redirect("/dashboard");
+    redirect("/orders");
   }
 
   if (order.status !== "pending_payment" && order.status !== "paid") {
@@ -143,6 +143,7 @@ export async function cancelOrder(formData: FormData) {
   }
 
   revalidatePath(`/orders/${order.id}`);
+  revalidatePath("/orders");
   revalidatePath("/dashboard");
   redirect(`/orders/${order.id}`);
 }
@@ -159,7 +160,7 @@ export async function markOrderDelivered(formData: FormData) {
   }
 
   if (!orderId) {
-    redirect("/dashboard");
+    redirect("/orders");
   }
 
   const { data: order } = await supabase
@@ -169,7 +170,7 @@ export async function markOrderDelivered(formData: FormData) {
     .maybeSingle();
 
   if (!order || order.buyer_id !== user.id) {
-    redirect("/dashboard");
+    redirect("/orders");
   }
 
   if (order.status !== "paid") {
@@ -199,6 +200,7 @@ export async function markOrderDelivered(formData: FormData) {
   }
 
   revalidatePath(`/orders/${order.id}`);
+  revalidatePath("/orders");
   revalidatePath("/dashboard");
   redirect(`/orders/${order.id}`);
 }

@@ -3,26 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { LandingPage } from "@/components/landing-page";
 import { SiteFooter } from "@/components/site-footer";
 import { PRODUCT_COLUMNS, type Product } from "@/lib/products";
-import type { User } from "@supabase/supabase-js";
-
-function firstNameFromUser(user: User | null) {
-  if (!user) return null;
-  const full =
-    user.user_metadata?.full_name ||
-    user.user_metadata?.name ||
-    user.email?.split("@")[0] ||
-    "";
-  return full.split(" ").filter(Boolean)[0] ?? null;
-}
-
-function avatarUrlFromUser(user: User | null) {
-  if (!user) return null;
-  return (
-    user.user_metadata?.avatar_url ||
-    user.user_metadata?.picture ||
-    null
-  );
-}
+import { avatarUrlFromUser, firstNameFromUser } from "@/lib/user-display";
 
 export const metadata: Metadata = {
   title: {
@@ -75,7 +56,7 @@ export default async function HomePage() {
         products={(data ?? []) as Product[]}
         cartCount={0}
       />
-      <SiteFooter wide compact signedIn={Boolean(user)} />
+      <SiteFooter wide compact signedIn={Boolean(user)} mode="buy" />
     </div>
   );
 }

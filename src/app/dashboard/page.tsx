@@ -1,10 +1,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { SellerShell } from "@/components/seller-shell";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice, formatQuantity, PRODUCT_COLUMNS, type Product } from "@/lib/products";
 import { ProductPhoto } from "@/components/product-photo";
 import { orderStatusLabel } from "@/lib/orders";
+import { firstNameFromUser } from "@/lib/user-display";
+import { loginHref } from "@/lib/paths";
 import { archiveSale, signOut, unarchiveSale } from "./actions";
 import { deleteProduct } from "../products/actions";
 
@@ -32,28 +35,28 @@ function SaleListItem({
   archived: boolean;
 }) {
   return (
-    <li className="flex items-start gap-3 rounded-2xl bg-surface p-4 ring-1 ring-foreground/8 transition hover:bg-white">
+    <li className="flex items-start gap-3 rounded-2xl bg-white p-4 ring-1 ring-[rgba(25,60,45,0.10)] transition hover:bg-[#FFF8EA]">
       <Link
         href={`/orders/${order.id}`}
         className="min-w-0 flex-1 transition hover:opacity-80"
       >
         <div className="flex items-baseline justify-between gap-3">
-          <p className="font-medium text-foreground">
+          <p className="font-medium text-[#173C2E]">
             {product?.title ?? "Item"}
           </p>
           {product ? (
-            <p className="shrink-0 text-sm text-foreground">
+            <p className="shrink-0 text-sm text-[#173C2E]">
               {formatPrice(product.price_cents)}
               {order.quantity > 1 ? ` × ${order.quantity}` : ""}
             </p>
           ) : null}
         </div>
-        <p className="mt-1 text-sm text-muted">
+        <p className="mt-1 text-sm text-[#4f645a]">
           {orderStatusLabel(order.status)}
           {order.quantity > 1 ? ` · qty ${order.quantity}` : ""}
         </p>
         {order.status === "paid" || order.status === "delivered" ? (
-          <p className="mt-2 text-sm text-accent">
+          <p className="mt-2 text-sm text-[#397A45]">
             Deliver to: {order.delivery_address}
           </p>
         ) : null}
@@ -67,7 +70,7 @@ function SaleListItem({
         />
         <button
           type="submit"
-          className="shrink-0 text-sm text-muted hover:text-foreground hover:underline"
+          className="shrink-0 text-sm text-[#4f645a] hover:text-[#173C2E] hover:underline"
         >
           {archived ? "Unarchive" : "Archive"}
         </button>
@@ -86,24 +89,10 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect(loginHref("/dashboard"));
   }
 
-  const name =
-    user.user_metadata?.full_name ||
-    user.user_metadata?.name ||
-    "Neighbor";
-  const email = user.email ?? "No email on file";
-  const avatarUrl =
-    user.user_metadata?.avatar_url ||
-    user.user_metadata?.picture ||
-    null;
-  const initials = name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part: string) => part[0]?.toUpperCase() ?? "")
-    .join("");
+  const firstName = firstNameFromUser(user) ?? "neighbor";
 
   const { data } = await supabase
     .from("products")
@@ -113,26 +102,6 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     .order("created_at", { ascending: false });
 
   const myProducts = (data ?? []) as Product[];
-
-  const { data: purchaseRows } = await supabase
-    .from("orders")
-    .select("id, product_id, delivery_address, status, quantity, created_at")
-    .eq("buyer_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(5);
-
-  const purchases = purchaseRows ?? [];
-  const purchaseProductIds = purchases.map((order) => order.product_id);
-  const { data: purchaseProducts } = purchaseProductIds.length
-    ? await supabase
-        .from("products")
-        .select("id, title, price_cents")
-        .in("id", purchaseProductIds)
-    : { data: [] };
-
-  const purchaseTitleById = new Map(
-    (purchaseProducts ?? []).map((product) => [product.id, product]),
-  );
 
   const salesSelect =
     "id, product_id, delivery_address, status, quantity, created_at, archived_at";
@@ -176,143 +145,48 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
     (salesProducts ?? []).map((product) => [product.id, product]),
   );
 
-  const listingCount = myProducts.length;
-  const salesCount = sales.length;
-  const orderCount = purchases.length;
-  const hasListings = listingCount > 0;
-  const hasSales = salesCount > 0 || archivedSales.length > 0 || showArchived;
-  const hasOrders = orderCount > 0;
-  const isNewMember = !hasListings && !hasSales && !hasOrders;
-
   return (
-    <main className="relative flex flex-1 flex-col overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <div className="absolute -left-16 top-24 h-56 w-56 rounded-full bg-accent/10 blur-3xl" />
-        <div className="absolute -right-10 top-80 h-64 w-64 rounded-full bg-[#c9e2d4]/50 blur-3xl" />
-        <div
-          className="absolute inset-0 opacity-[0.35]"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle at 1px 1px, rgba(31,107,74,0.18) 1px, transparent 0)",
-            backgroundSize: "22px 22px",
-          }}
-        />
-      </div>
-
-      <div className="mx-auto w-full max-w-3xl px-6 pb-16 pt-8">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <Link
-            href="/"
-            className="font-display text-lg font-semibold tracking-tight text-foreground transition hover:opacity-80"
-          >
-            Tiny Shop Club
-          </Link>
-          <nav className="flex items-center gap-3">
-            <Link
-              href="/products"
-              className="text-sm text-muted transition hover:text-foreground"
-            >
-              Explore
-            </Link>
-            <Link
-              href="/products/new"
-              className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-white transition hover:opacity-90"
-            >
-              Sell something
-            </Link>
-            <span
-              className="relative h-8 w-8 shrink-0 overflow-hidden rounded-full ring-2 ring-white"
-              title={name}
-            >
-              {avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={avatarUrl}
-                  alt=""
-                  className="h-full w-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <span className="flex h-full w-full items-center justify-center bg-accent text-xs font-semibold text-white">
-                  {initials.slice(0, 1) || "T"}
-                </span>
-              )}
-            </span>
-          </nav>
-        </div>
-
-        <section className="relative mt-8 overflow-hidden rounded-3xl">
-          <div className="relative h-44 w-full sm:h-52">
+    <SellerShell>
+      <main className="mx-auto w-full max-w-[880px] flex-1 px-6 pb-16 pt-8">
+        <section className="relative overflow-hidden rounded-3xl">
+          <div className="relative h-40 w-full sm:h-48">
             <Image
               src="/dashboard-marketplace.png"
               alt="Neighborhood table with cookies, crafts, plants, toys, flowers, and lemonade"
               fill
               priority
               className="object-cover"
-              sizes="(max-width: 768px) 100vw, 768px"
+              sizes="(max-width: 768px) 100vw, 880px"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#173028]/55 via-[#173028]/15 to-transparent" />
-          </div>
-        </section>
-
-        <section className="mt-6">
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-            <div className="relative h-20 w-20 shrink-0 overflow-hidden rounded-full ring-4 ring-white shadow-md">
-              {avatarUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={avatarUrl}
-                  alt={`${name}'s profile photo`}
-                  className="h-full w-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-accent text-xl font-semibold text-white">
-                  {initials || "T"}
-                </div>
-              )}
-            </div>
-
-            <div className="min-w-0 flex-1">
-              <p className="text-sm text-muted">Your corner of the club</p>
-              <h1 className="mt-1 font-display text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-                Welcome back, {name.split(" ")[0]}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#173028]/60 via-[#173028]/20 to-transparent" />
+            <div className="absolute bottom-4 left-5 right-5">
+              <p className="text-sm font-medium text-white/80">Your shop</p>
+              <h1 className="font-display text-3xl font-semibold tracking-tight text-white sm:text-4xl">
+                Welcome back, {firstName}
               </h1>
-              <p className="mt-2 truncate text-muted">{email}</p>
-              <p className="mt-2 text-sm text-accent">
-                Glad you&apos;re here — see what the neighborhood is sharing, or
-                start your own tiny shop.
-              </p>
             </div>
           </div>
         </section>
 
-        <section className="mt-10 grid gap-3 sm:grid-cols-2">
+        <section className="mt-6 grid gap-3 sm:grid-cols-3">
+          <div className="rounded-2xl bg-white px-4 py-4 ring-1 ring-[rgba(25,60,45,0.10)]">
+            <p className="text-sm text-[#4f645a]">Listings</p>
+            <p className="mt-1 font-display text-2xl font-semibold text-[#173C2E]">
+              {myProducts.length}
+            </p>
+          </div>
+          <div className="rounded-2xl bg-white px-4 py-4 ring-1 ring-[rgba(25,60,45,0.10)]">
+            <p className="text-sm text-[#4f645a]">Active sales</p>
+            <p className="mt-1 font-display text-2xl font-semibold text-[#173C2E]">
+              {sales.length}
+            </p>
+          </div>
           <Link
             href="/products/new"
-            className="group rounded-2xl bg-accent px-5 py-5 text-white transition hover:opacity-95"
+            className="rounded-2xl bg-[#F47A2A] px-4 py-4 text-white transition hover:opacity-95"
           >
-            <p className="font-display text-lg font-semibold">Start selling</p>
-            <p className="mt-1 text-sm text-white/80">
-              Put something in your tiny shop.
-            </p>
-            <span className="mt-4 inline-block text-sm transition group-hover:translate-x-1">
-              Get started →
-            </span>
-          </Link>
-          <Link
-            href="/products"
-            className="group rounded-2xl bg-surface px-5 py-5 ring-1 ring-foreground/10 transition hover:bg-white"
-          >
-            <p className="font-display text-lg font-semibold text-foreground">
-              Explore the club
-            </p>
-            <p className="mt-1 text-sm text-muted">
-              See what your neighbors are selling.
-            </p>
-            <span className="mt-4 inline-block text-sm text-accent transition group-hover:translate-x-1">
-              Take a look →
-            </span>
+            <p className="font-display text-lg font-semibold">List an item</p>
+            <p className="mt-1 text-sm text-white/85">Add something to your shop.</p>
           </Link>
         </section>
 
@@ -322,182 +196,141 @@ export default async function DashboardPage({ searchParams }: DashboardPageProps
           </p>
         ) : null}
 
-        {isNewMember ? (
-          <section className="mt-12">
-            <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-              Your activity
-            </h2>
-            <p className="mt-2 text-muted">
-              {listingCount} listing{listingCount === 1 ? "" : "s"} ·{" "}
-              {salesCount} sale{salesCount === 1 ? "" : "s"} · {orderCount}{" "}
-              order{orderCount === 1 ? "" : "s"}
-            </p>
-          </section>
-        ) : (
-          <>
-            {hasSales ? (
-              <section className="mt-12">
-                <div className="flex items-end justify-between gap-4">
-                  <div>
-                    <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-                      Your sales
-                    </h2>
-                    <p className="mt-1 text-sm text-muted">
-                      When a neighbor pays, it shows up here with the delivery
-                      address
-                    </p>
+        <section className="mt-12">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <h2 className="font-display text-2xl font-semibold tracking-tight text-[#173C2E]">
+                Your listings
+              </h2>
+              <p className="mt-1 text-sm text-[#4f645a]">
+                What neighbors can buy from you right now
+              </p>
+            </div>
+          </div>
+          {myProducts.length === 0 ? (
+            <div className="mt-4 rounded-2xl bg-white px-6 py-8 text-center ring-1 ring-[rgba(25,60,45,0.10)]">
+              <p className="font-display text-lg font-semibold text-[#173C2E]">
+                Your shop is empty
+              </p>
+              <p className="mt-2 text-sm text-[#4f645a]">
+                Cookies, crafts, plants, or a toy — list the first one.
+              </p>
+              <Link
+                href="/products/new"
+                className="mt-5 inline-flex rounded-full bg-[#F47A2A] px-4 py-2 text-sm font-semibold text-white"
+              >
+                List an item
+              </Link>
+            </div>
+          ) : (
+            <ul className="mt-6 space-y-3">
+              {myProducts.map((product) => (
+                <li
+                  key={product.id}
+                  className="flex items-center gap-4 rounded-2xl bg-white p-4 ring-1 ring-[rgba(25,60,45,0.10)]"
+                >
+                  <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl">
+                    <ProductPhoto
+                      src={product.image_url}
+                      alt={product.title}
+                      sizes="48px"
+                    />
                   </div>
                   <Link
-                    href={
-                      showArchived ? "/dashboard" : "/dashboard?show_archived=1"
-                    }
-                    className="shrink-0 text-sm text-accent transition hover:underline"
+                    href={`/products/${product.id}`}
+                    className="min-w-0 flex-1 transition hover:opacity-80"
                   >
-                    {showArchived ? "Hide archived" : "Show archived"}
+                    <p className="truncate font-medium text-[#173C2E]">
+                      {product.title}
+                    </p>
+                    <p className="text-sm text-[#4f645a]">
+                      {formatPrice(product.price_cents)} ·{" "}
+                      {formatQuantity(product.quantity)}
+                    </p>
                   </Link>
-                </div>
-                {sales.length === 0 ? (
-                  <p className="mt-4 text-muted">
-                    {showArchived ? "No active sales." : "No sales yet."}
-                  </p>
-                ) : (
-                  <ul className="mt-4 space-y-3">
-                    {sales.map((order) => (
-                      <SaleListItem
-                        key={order.id}
-                        order={order}
-                        product={salesTitleById.get(order.product_id)}
-                        archived={false}
-                      />
-                    ))}
-                  </ul>
-                )}
-                {showArchived ? (
-                  <div className="mt-8">
-                    <h3 className="font-display text-lg font-semibold tracking-tight text-foreground">
-                      Archived sales
-                    </h3>
-                    <p className="mt-1 text-sm text-muted">
-                      Hidden from your main list — unarchive to bring one back
-                    </p>
-                    {archivedSales.length === 0 ? (
-                      <p className="mt-4 text-muted">No archived sales.</p>
-                    ) : (
-                      <ul className="mt-4 space-y-3">
-                        {archivedSales.map((order) => (
-                          <SaleListItem
-                            key={order.id}
-                            order={order}
-                            product={salesTitleById.get(order.product_id)}
-                            archived
-                          />
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                ) : null}
-              </section>
-            ) : null}
-
-            {hasOrders ? (
-              <section className="mt-12">
-                <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-                  Your orders
-                </h2>
-                <p className="mt-1 text-sm text-muted">
-                  Items coming to your door
-                </p>
-                <ul className="mt-4 space-y-3">
-                  {purchases.map((order) => {
-                    const product = purchaseTitleById.get(order.product_id);
-                    return (
-                      <li key={order.id}>
-                        <Link
-                          href={`/orders/${order.id}`}
-                          className="block rounded-2xl bg-surface p-4 ring-1 ring-foreground/8 transition hover:bg-white"
-                        >
-                          <p className="font-medium text-foreground">
-                            {product?.title ?? "Item"}
-                            {order.quantity > 1 ? ` × ${order.quantity}` : ""}
-                          </p>
-                          <p className="mt-1 text-sm text-muted">
-                            {orderStatusLabel(order.status)}
-                          </p>
-                        </Link>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </section>
-            ) : null}
-
-            {hasListings ? (
-              <section className="mt-12">
-                <div className="flex items-end justify-between gap-4">
-                  <div>
-                    <h2 className="font-display text-2xl font-semibold tracking-tight text-foreground">
-                      Your listings
-                    </h2>
-                    <p className="mt-1 text-sm text-muted">
-                      Things you&apos;ve shared with the club
-                    </p>
-                  </div>
-                </div>
-                <ul className="mt-6 space-y-3">
-                  {myProducts.map((product) => (
-                    <li
-                      key={product.id}
-                      className="flex items-center gap-4 rounded-2xl bg-surface p-4 ring-1 ring-foreground/8 transition hover:bg-white"
+                  <form action={deleteProduct}>
+                    <input type="hidden" name="productId" value={product.id} />
+                    <button
+                      type="submit"
+                      className="text-sm text-red-800/80 hover:text-red-800 hover:underline"
                     >
-                      <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl">
-                        <ProductPhoto
-                          src={product.image_url}
-                          alt={product.title}
-                          sizes="48px"
-                        />
-                      </div>
-                      <Link
-                        href={`/products/${product.id}`}
-                        className="min-w-0 flex-1 transition hover:opacity-80"
-                      >
-                        <p className="truncate font-medium text-foreground">
-                          {product.title}
-                        </p>
-                        <p className="text-sm text-muted">
-                          {formatPrice(product.price_cents)} ·{" "}
-                          {formatQuantity(product.quantity)}
-                        </p>
-                      </Link>
-                      <form action={deleteProduct}>
-                        <input
-                          type="hidden"
-                          name="productId"
-                          value={product.id}
-                        />
-                        <button
-                          type="submit"
-                          className="text-sm text-red-800/80 hover:text-red-800 hover:underline"
-                        >
-                          Delete
-                        </button>
-                      </form>
-                    </li>
+                      Delete
+                    </button>
+                  </form>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="mt-12" id="sales">
+          <div className="flex items-end justify-between gap-4">
+            <div>
+              <h2 className="font-display text-2xl font-semibold tracking-tight text-[#173C2E]">
+                Your sales
+              </h2>
+              <p className="mt-1 text-sm text-[#4f645a]">
+                When a neighbor pays, the delivery address shows up here
+              </p>
+            </div>
+            <Link
+              href={showArchived ? "/dashboard" : "/dashboard?show_archived=1"}
+              className="shrink-0 text-sm text-[#397A45] transition hover:underline"
+            >
+              {showArchived ? "Hide archived" : "Show archived"}
+            </Link>
+          </div>
+          {sales.length === 0 ? (
+            <p className="mt-4 text-[#4f645a]">
+              {showArchived ? "No active sales." : "No sales yet."}
+            </p>
+          ) : (
+            <ul className="mt-4 space-y-3">
+              {sales.map((order) => (
+                <SaleListItem
+                  key={order.id}
+                  order={order}
+                  product={salesTitleById.get(order.product_id)}
+                  archived={false}
+                />
+              ))}
+            </ul>
+          )}
+          {showArchived ? (
+            <div className="mt-8">
+              <h3 className="font-display text-lg font-semibold tracking-tight text-[#173C2E]">
+                Archived sales
+              </h3>
+              <p className="mt-1 text-sm text-[#4f645a]">
+                Hidden from your main list — unarchive to bring one back
+              </p>
+              {archivedSales.length === 0 ? (
+                <p className="mt-4 text-[#4f645a]">No archived sales.</p>
+              ) : (
+                <ul className="mt-4 space-y-3">
+                  {archivedSales.map((order) => (
+                    <SaleListItem
+                      key={order.id}
+                      order={order}
+                      product={salesTitleById.get(order.product_id)}
+                      archived
+                    />
                   ))}
                 </ul>
-              </section>
-            ) : null}
-          </>
-        )}
+              )}
+            </div>
+          ) : null}
+        </section>
 
         <form action={signOut} className="mt-12">
           <button
             type="submit"
-            className="rounded-md border border-foreground/15 bg-surface px-4 py-2 text-sm font-medium text-foreground transition hover:bg-white"
+            className="rounded-md border border-[rgba(25,60,45,0.15)] bg-white px-4 py-2 text-sm font-medium text-[#173C2E] transition hover:bg-[#FFF8EA]"
           >
             Sign out
           </button>
         </form>
-      </div>
-    </main>
+      </main>
+    </SellerShell>
   );
 }

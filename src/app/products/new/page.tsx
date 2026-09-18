@@ -12,13 +12,13 @@ export default function NewProductPage() {
 
   return (
     <main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 py-12">
-      <Link href="/products" className="text-sm text-muted hover:text-foreground">
-        ← Back to items
+      <Link href="/dashboard" className="text-sm text-muted hover:text-foreground">
+        ← Back to your shop
       </Link>
       <h1 className="mt-4 font-display text-3xl font-semibold tracking-tight text-foreground">
         List an item
       </h1>
-      <p className="mt-2 text-muted">Add something for neighbors to browse.</p>
+      <p className="mt-2 text-muted">Add something neighbors can buy from your shop.</p>
 
       <form action={formAction} className="mt-8 space-y-5">
         <div>

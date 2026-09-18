@@ -1,8 +1,11 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BuyerShell } from "@/components/buyer-shell";
+import { SellerShell } from "@/components/seller-shell";
 import { createClient } from "@/lib/supabase/server";
 import { ProductPhoto } from "@/components/product-photo";
 import { formatPrice, formatQuantity, PRODUCT_COLUMNS, type Product } from "@/lib/products";
+import { loginHref } from "@/lib/paths";
 import { deleteProduct } from "../actions";
 
 type ProductPageProps = {
@@ -30,11 +33,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const product = data as Product;
   const isOwner = user?.id === product.seller_id;
   const inStock = product.quantity > 0;
+  const Shell = isOwner ? SellerShell : BuyerShell;
+  const backHref = isOwner ? "/dashboard" : "/products";
+  const backLabel = isOwner ? "← Back to your shop" : "← Back to items";
 
   return (
+    <Shell>
     <main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 py-12">
-      <Link href="/products" className="text-sm text-muted hover:text-foreground">
-        ← Back to items
+      <Link href={backHref} className="text-sm text-muted hover:text-foreground">
+        {backLabel}
       </Link>
 
       <h1 className="mt-6 font-display text-3xl font-semibold tracking-tight text-foreground">
@@ -88,7 +95,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </Link>
             ) : (
               <Link
-                href="/login"
+                href={loginHref(`/products/${product.id}/buy`)}
                 className="rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white transition hover:opacity-90"
               >
                 Sign in to buy
@@ -112,5 +119,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
         ) : null}
       </div>
     </main>
+    </Shell>
   );
 }

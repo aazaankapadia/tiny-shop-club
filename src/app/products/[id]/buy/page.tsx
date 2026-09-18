@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
+import { BuyerShell } from "@/components/buyer-shell";
 import { createClient } from "@/lib/supabase/server";
 import { PRODUCT_COLUMNS, type Product } from "@/lib/products";
+import { loginHref } from "@/lib/paths";
 import { BuyForm } from "./buy-form";
 
 type BuyPageProps = {
@@ -17,7 +19,7 @@ export default async function BuyPage({ params, searchParams }: BuyPageProps) {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect(loginHref(`/products/${id}/buy`));
   }
 
   const { data: product } = await supabase
@@ -49,7 +51,7 @@ export default async function BuyPage({ params, searchParams }: BuyPageProps) {
   const savedAddress = profile?.delivery_address?.trim() ?? "";
 
   return (
-    <>
+    <BuyerShell>
       {cancelled ? (
         <p className="mx-auto mt-8 max-w-lg px-6 text-sm text-red-700">
           Payment was cancelled. You can try again when you&apos;re ready.
@@ -63,6 +65,6 @@ export default async function BuyPage({ params, searchParams }: BuyPageProps) {
         imageUrl={item.image_url}
         savedAddress={savedAddress}
       />
-    </>
+    </BuyerShell>
   );
 }

@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BuyerShell } from "@/components/buyer-shell";
+import { SellerShell } from "@/components/seller-shell";
 import { createClient } from "@/lib/supabase/server";
 import { formatPrice } from "@/lib/products";
 import { ProductPhoto } from "@/components/product-photo";
@@ -57,10 +59,15 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
       order.status === "delivered" ||
       order.status === "cancelled");
 
+  const Shell = isSeller ? SellerShell : BuyerShell;
+  const homeHref = isSeller ? "/dashboard" : "/orders";
+  const homeLabel = isSeller ? "← Back to your shop" : "← Back to your orders";
+
   return (
+    <Shell>
     <main className="mx-auto flex w-full max-w-lg flex-1 flex-col px-6 py-12">
-      <Link href="/dashboard" className="text-sm text-muted hover:text-foreground">
-        ← Back to dashboard
+      <Link href={homeHref} className="text-sm text-muted hover:text-foreground">
+        {homeLabel}
       </Link>
 
       <h1 className="mt-4 font-display text-3xl font-semibold tracking-tight text-foreground">
@@ -192,12 +199,13 @@ export default async function OrderPage({ params, searchParams }: OrderPageProps
         ) : null}
 
         <Link
-          href="/dashboard"
+          href={homeHref}
           className="rounded-md border border-foreground/15 bg-surface px-4 py-2 text-sm font-medium text-foreground transition hover:bg-white"
         >
-          Dashboard
+          {isSeller ? "My shop" : "My orders"}
         </Link>
       </div>
     </main>
+    </Shell>
   );
 }

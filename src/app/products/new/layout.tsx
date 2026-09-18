@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
+import { SellerShell } from "@/components/seller-shell";
 import { createClient } from "@/lib/supabase/server";
+import { loginHref } from "@/lib/paths";
 
 export default async function NewProductLayout({
   children,
@@ -12,8 +14,8 @@ export default async function NewProductLayout({
   } = await supabase.auth.getUser();
 
   if (!user) {
-    redirect("/login");
+    redirect(loginHref("/products/new"));
   }
 
-  return children;
+  return <SellerShell>{children}</SellerShell>;
 }

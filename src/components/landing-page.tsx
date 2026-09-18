@@ -67,16 +67,9 @@ export function LandingPage({
             </div>
           </div>
 
-          <div className="relative">
+          <div className="relative mx-auto w-full max-w-[440px] lg:mx-0 lg:flex lg:h-[410px] lg:max-w-none lg:items-center lg:justify-center">
             <HeartDoodle className="absolute -right-1 -top-3 z-10 hidden sm:block" />
-            <div className="relative aspect-[4/3] overflow-hidden rounded-[28px] shadow-[0_14px_36px_rgba(23,60,46,0.10)] lg:aspect-auto lg:h-[410px]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/landing-hero.jpg"
-                alt="Cookies and lemonade on the same table"
-                className="h-full w-full object-cover object-[center_40%]"
-              />
-            </div>
+            <ShopMark className="aspect-square h-auto w-full lg:h-[400px] lg:w-[400px]" />
           </div>
         </section>
 
@@ -201,7 +194,13 @@ export function LandingPage({
               Every purchase supports young entrepreneurs in our community.
             </p>
           </div>
-          <ShopMark className="hidden h-12 w-12 md:block" />
+          <Link
+            href="/notes"
+            className="hidden h-12 w-12 md:block"
+            aria-label="Class notes"
+          >
+            <ShopMark className="h-12 w-12" />
+          </Link>
         </div>
       </section>
     </div>
