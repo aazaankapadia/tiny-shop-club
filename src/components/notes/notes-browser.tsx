@@ -83,12 +83,12 @@ export function NotesBrowser() {
       </ul>
 
       <div className="mt-10">
-        <Link
-          href="/notes/review"
+        <a
+          href="https://games6741.netlify.app/review.html"
           className="text-sm font-semibold text-[var(--notes-accent)] hover:underline"
         >
           Practice
-        </Link>
+        </a>
       </div>
     </div>
   );
