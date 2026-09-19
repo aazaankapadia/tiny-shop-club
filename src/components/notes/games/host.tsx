@@ -29,8 +29,10 @@ import {
   TicTacToe,
   WhackTile,
 } from "@/components/notes/games/puzzles";
+import { PolytrackMaps } from "@/components/notes/games/polytrack-maps";
 
 const GAMES: Record<string, ComponentType> = {
+  "polytrack-maps": PolytrackMaps,
   "stick-dash": StickDash,
   "neon-loop": NeonLoop,
   "slope-rush": SlopeRush,
