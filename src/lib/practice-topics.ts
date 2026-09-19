@@ -7,6 +7,7 @@ export type PracticeTopic = {
 };
 
 export const PRACTICE_TOPICS: PracticeTopic[] = [
+  { id: "polytrack-maps", name: "Polytrack Maps", tag: "quick review" },
   { id: "stick-dash", name: "Stick Dash", tag: "quick review" },
   { id: "neon-loop", name: "Neon Loop", tag: "quick review" },
   { id: "slope-rush", name: "Slope Rush", tag: "quick review" },
