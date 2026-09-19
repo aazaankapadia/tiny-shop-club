@@ -159,3 +159,18 @@ export const PRACTICE_TOPICS: PracticeTopic[] = [
 export function getPracticeTopic(id: string) {
   return PRACTICE_TOPICS.find((topic) => topic.id === id) ?? null;
 }
+
+/** Built-in topics hosted on this site (no external embed). */
+export function isOnSiteTopic(topic: PracticeTopic) {
+  return !topic.url;
+}
+
+/** On-site / quick-review topics first, then the rest. */
+export function sortPracticeTopics(topics: PracticeTopic[]) {
+  return [...topics].sort((a, b) => {
+    const aOnSite = isOnSiteTopic(a) ? 0 : 1;
+    const bOnSite = isOnSiteTopic(b) ? 0 : 1;
+    if (aOnSite !== bOnSite) return aOnSite - bOnSite;
+    return 0;
+  });
+}
