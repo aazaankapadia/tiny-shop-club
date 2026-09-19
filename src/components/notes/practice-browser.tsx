@@ -3,7 +3,12 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { GameHost } from "@/components/notes/games/host";
-import { PRACTICE_TOPICS, getPracticeTopic } from "@/lib/practice-topics";
+import {
+  PRACTICE_TOPICS,
+  getPracticeTopic,
+  isOnSiteTopic,
+  sortPracticeTopics,
+} from "@/lib/practice-topics";
 
 export function PracticeBrowser() {
   const [query, setQuery] = useState("");
@@ -11,13 +16,24 @@ export function PracticeBrowser() {
 
   const topics = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    if (!needle) return PRACTICE_TOPICS;
-    return PRACTICE_TOPICS.filter(
-      (topic) =>
-        topic.name.toLowerCase().includes(needle) ||
-        topic.tag.toLowerCase().includes(needle),
-    );
+    const filtered = !needle
+      ? PRACTICE_TOPICS
+      : PRACTICE_TOPICS.filter(
+          (topic) =>
+            topic.name.toLowerCase().includes(needle) ||
+            topic.tag.toLowerCase().includes(needle) ||
+            (isOnSiteTopic(topic) &&
+              (needle.includes("on-site") ||
+                needle.includes("onsite") ||
+                needle.includes("offline"))),
+        );
+    return sortPracticeTopics(filtered);
   }, [query]);
+
+  const onSiteCount = useMemo(
+    () => topics.filter((topic) => isOnSiteTopic(topic)).length,
+    [topics],
+  );
 
   const current = openId ? getPracticeTopic(openId) : null;
 
@@ -69,22 +85,35 @@ export function PracticeBrowser() {
 
       <p className="mb-3 text-[0.88rem] text-[var(--notes-muted)]">
         {topics.length} topic{topics.length === 1 ? "" : "s"}
+        {onSiteCount > 0
+          ? ` · ${onSiteCount} on-site backup${onSiteCount === 1 ? "" : "s"} first`
+          : ""}
       </p>
 
       <div className="flex flex-col gap-2">
-        {topics.map((topic) => (
-          <button
-            key={topic.id}
-            type="button"
-            onClick={() => setOpenId(topic.id)}
-            className="flex w-full items-center justify-between gap-3 rounded-[14px] border border-transparent bg-white/75 px-3.5 py-3 text-left transition hover:-translate-y-px hover:border-[#b9d3d6] hover:bg-white hover:shadow-[var(--notes-shadow)]"
-          >
-            <strong className="notes-serif font-bold">{topic.name}</strong>
-            <span className="whitespace-nowrap text-[0.78rem] font-semibold uppercase tracking-[0.03em] text-[var(--notes-muted)]">
-              {topic.tag}
-            </span>
-          </button>
-        ))}
+        {topics.map((topic) => {
+          const onSite = isOnSiteTopic(topic);
+          return (
+            <button
+              key={topic.id}
+              type="button"
+              onClick={() => setOpenId(topic.id)}
+              className="flex w-full items-center justify-between gap-3 rounded-[14px] border border-transparent bg-white/75 px-3.5 py-3 text-left transition hover:-translate-y-px hover:border-[#b9d3d6] hover:bg-white hover:shadow-[var(--notes-shadow)]"
+            >
+              <span className="min-w-0">
+                <strong className="notes-serif font-bold">{topic.name}</strong>
+                {onSite ? (
+                  <span className="mt-1 block text-[0.75rem] font-semibold text-[var(--notes-accent)]">
+                    On-site · works without external hosts
+                  </span>
+                ) : null}
+              </span>
+              <span className="whitespace-nowrap text-[0.78rem] font-semibold uppercase tracking-[0.03em] text-[var(--notes-muted)]">
+                {onSite ? "On-site" : topic.tag}
+              </span>
+            </button>
+          );
+        })}
       </div>
 
       {current ? (
